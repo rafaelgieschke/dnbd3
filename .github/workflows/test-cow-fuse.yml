@@ -4,12 +4,39 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@HEAD
       - name: Setup dotnet
-        uses: actions/setup-dotnet@v2
+        uses: actions/setup-dotnet@HEAD
         with:
-          dotnet-version: '6.x.x'
-
+          dotnet-version: '8.x.x'
+      - uses: docker://debian:12
+        with:
+          args: sh -c "eval \""$"cmd\""
+        env:
+          cmd: |
+            sudo apt-get update -y -qq 
+            sudo apt-get install -y -qq make \
+                                        clang-format \
+                                        linux-headers-generic \
+                                        libfuse-dev \
+                                        libjansson-dev \
+                                        libcurl4-openssl-dev
+            cmake -B ${{ github.workspace }}/build \
+                  -S ${{ github.workspace }} \
+                  -D CMAKE_BUILD_TYPE=${{ matrix.config.build-type }} \
+                  -D DNBD3_KERNEL_MODULE=OFF \
+                  -D DNBD3_BENCHMARK=OFF \
+                  -D DNBD3_CLIENT_FUSE=ON \
+                  -D DNBD3_CLIENT_FUSE_COW_TEST=ON \
+                  -D DNBD3_SERVER=ON \
+                  -D DNBD3_SERVER_FUSE=OFF \
+                  -D DNBD3_SERVER_AFL=OFF \
+                  -D DNBD3_SERVER_DEBUG_LOCKS=OFF \
+                  -D DNBD3_SERVER_DEBUG_THREADS=OFF \
+                  -D DNBD3_RELEASE_HARDEN=OFF \
+                  -D DNBD3_PACKAGE_DOCKER=OFF
+            cd build
+            make
       - name: Install dnbd3 dependencies
         working-directory: ${{ github.workspace }}
         run: |
