@@ -16,7 +16,7 @@ jobs:
           cmd: |
             alias sudo=env
             sudo apt-get update -y -qq 
-            sudo apt-get install -y -qq build-essential make \
+            sudo apt-get install -y -qq build-essential cmake make \
                                         clang-format \
                                         linux-headers-generic \
                                         libfuse-dev \
